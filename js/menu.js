@@ -9,6 +9,27 @@ let Menu = {
     "Help":"./pages/help.html",
     ]}
 }
-let MenuActions = 
 
-function ShowMenu
+//let promptMarkup = [
+//  ["span", {}],
+//  ["button", ],
+//]
+let promptHtml = `
+ <div class="{{}}
+ `
+
+// globals
+let MenuPath = [];
+let MenuActions = [];
+// run this after the current menu action is done.
+let MenuInputCallback = null;
+
+function MenuPrompt(message, callback){
+}
+
+function MenuConfirm(message, callback){
+}
+
+
+function MenuShow(){
+}
