@@ -15,7 +15,9 @@ let Menu = {
 //  ["button", ],
 //]
 let promptHtml = `
- <div class="{{}}
+ <div class="menu_prompt">
+   
+ </div>
  `
 
 // globals

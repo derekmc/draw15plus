@@ -9,16 +9,18 @@ const PRE = "DRAW15DATA";
 // windows: [x0, y0, x1, y1, ...],
 // points array has the stroke info, followed by the stroke offsets.
 
+let ;
 let DrawingName = "mydrawing";
 let Points = [];
 let Windows = []; // x0, y0, x1, y1....
 let LastPointTime = 0;
 let LastDrawTime = 0;
-let StrokeInfo = {width};
+let StrokeInfo = {width: 3, color: black,};
 let FocusX = 1; // focus multiplier
 let MouseDownPos = null;
 let Canvas = null;
 let Buffer = null;
+let Colors = ['orange', 'red', 'yellow', 'green', 'blue', 'purple', 'black'];
 
 
 window.addEventListener("load", Init);
@@ -27,6 +29,8 @@ window.addEventListener("load", Init);
 function Init(){
   Canvas = document.getElementById("canvas0");
   Buffer = document.createElement("canvas");
+  window.addEventListener("mousedown", MouseDown);
+  window.addEventListener("mousemove", MouseMove);
 }
 
 function Resize(){
