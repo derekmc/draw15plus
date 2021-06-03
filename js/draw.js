@@ -13,15 +13,14 @@ const DRAW = "draw",
 
 
 const SETTINGS = { // default settings
-  colorIndex: 0,
-  colorOpacity: 1.0,
   lineWidth: 3,
   focus: 1.0,  // to allow for "controlled draw".
-  focusPos: [50,50] //  percentage position out of 100.
+  focusPos: [50,50], //  percentage position out of 100.
   fillIndex: 0,
-  fillOpacity: 1.0
+  fillOpacity: 1.0,
+  colorIndex: 0,
+  colorOpacity: 1.0,
   background: "#fff",
-  toolIndex: 0
   colors: [
     [0,0,0], // black
     [255, 0, 0], [255, 128, 0], [255, 255, 0], // red, orange, yellow
@@ -29,20 +28,29 @@ const SETTINGS = { // default settings
     [255, 0, 160], // fuscia
     [255,255,255], // white
   ],
+
+  toolIndex: 0,
   tools: [
     DRAW, LINE, ARC,
     RECTANGLE, ELLIPSE, POLYGON,
     COPY, PASTE,
     REMOVE, ERASE,
   ],
+
   strokeInfo: {}
+
+  //constants
+  DrawDelay: 1000/20,
+
 }
 let settings = copy(SETTINGS);
+let StrokeRequiredProperties = {windowIndex: "number", tool: "string", offsetStart: "number", offsetEnd: "number"};
+let StrokeOptionalProperties = {color: "string", fill: "string", lineWidth: "number"}; 
 UpdateStrokeInfo();
 
 // globals: ui, drawing, settings
 // origin is based on zoom
-// stroke info: {winIndex, type: "line", color, width, zoompower: n(2^n)}
+// stroke info: {winIndex, tool: "line", color, width, zoompower: n(2^n)}
 // windows: [x0, y0, x1, y1, ...],
 // points array has the stroke info, followed by the stroke offsets.
 
@@ -61,13 +69,14 @@ let ui = {
 let drawing = {
   name: "mydrawing",
   offsets: [], // [dx, dy, dx, dy...]
-  strokes: [], // [info...] {lineWidth, windowIndex, tool, offsetIndex, color, fill}
-  windows: [[0,0,0]], // [[zoompower, x0, y0, left, top, bottom, right],...] Note: x0, y0 is the window center point, left, top, bottom, right set the clipping region
+  strokes: [], // [info...] {lineWidth, windowIndex, tool, offsetStart, offsetEnd, color, fill}
+  windows: [[0,0,0]], // [[zoompower, x0, y0, left, top, right, bottom],...] Note: x0, y0 is the window center point, left, top, bottom, right set the clipping region
   outline: [], // convex outline of drawing.
   layers: [], // [{offsets, strokes, windows, outline}]  layer and top level drawing properties reference the same objects.
   layerIndex: 0,
 }
 
+/*
 let Points = []; //"0", 2, 3, 
 let Windows = []; // x0, y0, x1, y1....
 let Styles = [];
@@ -79,8 +88,6 @@ let FocusPos = [];
 let MouseDownPos = null;
 
 // settings
-let ToolIndex = 0;
-let Tools = 
 
 let ColorIndex = 0;
 let ColorOpacity = 1.0;
@@ -92,6 +99,7 @@ let ShowBackLayers = 0.5;
 let ShowFrontLayers = 0.25;
 let LayerIndex = 0;
 let Layers = []; // Points, Windows, Styles
+*/
 
 
 window.addEventListener("load", Init);
@@ -112,7 +120,76 @@ function Resize(){
 function DrawLastStroke(){
 }
 
+function checkProperties(obj, required, optional){
+  let all = {};
+  for(let propname in optional){
+    all[propname] = optional[propname];
+  }
+  for(let propname in required){
+    let typename = required[propname];
+    if(!obj.hasOwnProperty(propname)){
+      throw new Error(`Property '${propname}' missing.`);
+    }
+  }
+  for(let propname in all){
+    let value = obj[propname];
+    if(!obj.hasOwnProperty(propname)){
+      continue;
+    }
+    let valuetype = typeof value;
+    if(typename == "string" || typename == "number"){
+      if(typename != valuetype){
+        throw new Error(`Property '${propname}' should be '${typename}', got '${valuetype}'`);
+      }
+    }
+    if(typename == "array"){
+      if(!Array.isArray(value)){
+        throw new Error(`Property '${propname}' should be 'array', got '${valuetype}'`);
+      }
+    }
+    if(typename == "object"){
+      if(valuetype != "object"){
+        throw new Error(`Property '${propname}' should be 'object', got '${valuetype}'`);
+      }
+      if(Array.isArray(value)){
+        throw new Error(`Property '${propname}' should be 'object', got 'array'`);
+      }
+    }
+  }
+}
+
 function DrawAll(){
+  let ctx = Canvas.getContext("2d");
+  for(let i=0; i<drawing.strokes.length; ++i){
+    let stroke = drawing.strokes[i];
+    checkProperties(stroke, StrokeRequiredProperties, StrokeOptionalProperties);
+    let start = stroke.offsetStart;
+    let end = stroke.offsetEnd;
+    let win = drawing.windows[stroke.windowIndex];
+    let zoom = Math.pow(2, win[0])
+    let x = win[1];
+    let y = win[2]; 
+    let left = win[3];
+    let top = win[4];
+    let right = win[5];
+    let bottom = win[6];
+    ctx.lineWidth = stroke.lineWidth? stroke.lineWidth : 2;
+    ctx.strokeStyle = stroke.color? stroke.color : "#000";
+
+
+    ctx.beginPath();
+    for(let j=start; j<end; j+=2){
+      let dx = drawing.offsets[j];
+      let dy = drawing.offsets[j + 1];
+      x += dx;
+      y += dy;
+      if(j == start){
+        ctx.moveTo(x, y); }
+      else{
+        ctx.lineTo(x, y); }
+    }
+    ctx.stroke();
+  }
 }
 
 // useful for showing zoom and pan, especially when 
@@ -168,7 +245,20 @@ function MouseDown(ev){
 
 function MouseMove(ev){
   if(ui.mouseDownPos){
-    let tool = 
+    let tool = settings.tools[settings.toolIndex];
+    let now = Date.now();
+    let dt = now - ui.lastDraw;
+    if(dt < settings.DrawDelay){
+      return;
+    }
+ 
+    if(tool == DRAW){
+
+
+    }
+    //} else if (tool == LINE){
+    //} else if (tool == ARC){
+
   }
 }
 

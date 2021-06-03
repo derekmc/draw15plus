@@ -7,7 +7,7 @@ let Menu = {
   "App": {
     "Tutorial": "./pages/tutorial.html",
     "Help":"./pages/help.html",
-    ]}
+  },
 }
 
 //let promptMarkup = [
